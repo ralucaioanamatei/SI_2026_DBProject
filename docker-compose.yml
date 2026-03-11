@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: crypto_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: si_2026
+      MYSQL_DATABASE: crypto_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db_setup/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  mysql_data:
