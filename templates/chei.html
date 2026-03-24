@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><title>Chei</title>
+<style>
+    body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; }
+    .card { max-width: 950px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .alert { padding: 15px; border-radius: 12px; margin-bottom: 20px; font-weight: bold; }
+    .alert-error { background: #ffebeb; color: #d63031; border-left: 6px solid #d63031; }
+    .alert-success { background: #eafff5; color: #27ae60; border-left: 6px solid #27ae60; }
+    th { background: #fdfcff; color: #6c5ce7; padding: 15px; text-align: left; }
+    td { padding: 15px; border-bottom: 1px solid #f1f0ff; }
+    .form-box { background: #fcfaff; padding: 25px; border-radius: 18px; margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; }
+    input { padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; }
+    .btn-key { background: #6c5ce7; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+</style></head>
+<body>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1>🔑 Gestiune chei</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}
+        {% endwith %}
+
+        <form method="POST" class="form-box">
+            <input type="number" name="id_algo" placeholder="ID Algoritm" required style="width: 100px;">
+            <input type="text" name="valoare" placeholder="Valoare HEX (ex: 414243)" required style="flex-grow: 1;">
+            <input type="text" name="salt" placeholder="IV / Salt (opțional)">
+            <button type="submit" class="btn-key">Generează cheie</button>
+        </form>
+
+        <table style="width:100%;">
+            <tr><th>ID Cheie</th><th>ID Algo</th><th>IV / Salt</th><th>Acțiuni</th></tr>
+            {% for c in items %}
+            <tr><td>#{{ c.id_cheie }}</td><td>Algoritm {{ c.id_algoritm }}</td><td>{{ c.vector_initializare_sau_salt if c.vector_initializare_sau_salt else '-' }}</td><td><a href="/chei/delete/{{ c.id_cheie }}" style="color:red; text-decoration:none;">Șterge</a></td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

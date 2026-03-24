@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8"><title>Dashboard</title>
+    <style>
+        body { margin: 0; padding: 0; height: 100vh; background: linear-gradient(135deg, #4b0082 0%, #6c5ce7 100%); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; }
+        .glass-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-radius: 30px; padding: 60px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; color: white; box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px; }
+        .nav-btn { background: rgba(255, 255, 255, 0.15); padding: 25px; border-radius: 18px; text-decoration: none; color: white; font-weight: bold; transition: 0.4s; border: 1px solid transparent; font-size: 1.1em; }
+        .nav-btn:hover { background: rgba(255, 255, 255, 0.25); border-color: #a29bfe; transform: translateY(-8px); }
+        h1 { font-size: 3.5em; margin: 0; text-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="glass-card">
+        <h1>🔐Project</h1>
+        <p style="font-size: 1.2em; opacity: 0.8;">Management securizat al cheilor de criptare</p>
+        <div class="grid">
+            <a href="/algoritmi" class="nav-btn">⚙️ Algoritmi</a>
+            <a href="/frameworks" class="nav-btn">🛠️ Frameworks</a>
+            <a href="/fisiere" class="nav-btn">📁 Fișiere</a>
+            <a href="/chei" class="nav-btn">🔑 Chei</a>
+            <a href="/performante" class="nav-btn" style="grid-column: span 2; background: #6c5ce7;">📊 Jurnal performanță</a>
+        </div>
+    </div>
+</body>
+</html>

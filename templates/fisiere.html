@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><title>Fișiere</title>
+<style>
+    body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; }
+    .card { max-width: 950px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    th { color: #6c5ce7; padding: 15px; text-align: left; background: #fdfcff; }
+    td { padding: 15px; border-bottom: 1px solid #f1f0ff; }
+    form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+    input, select, button { padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; }
+    .btn-file { background: #6c5ce7; color: white; grid-column: span 2; font-weight: bold; cursor: pointer; border: none; }
+</style></head>
+<body>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1>📁 Gestiune Fișiere</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="text" name="nume" placeholder="Nume Original" required>
+            <input type="text" name="cale" placeholder="Cale Stocare" required>
+            <input type="text" name="hash" placeholder="Hash SHA256" required>
+            <select name="status"><option value="original">original</option><option value="criptat">criptat</option><option value="decriptat">decriptat</option></select>
+            <button type="submit" class="btn-file">Înregistrează fișier</button>
+        </form>
+
+        <table style="width:100%;">
+            <tr><th>ID</th><th>Nume</th><th>Status</th><th>Acțiuni</th></tr>
+            {% for f in items %}
+            <tr><td>#{{ f.id_fisier }}</td><td><strong>{{ f.nume_original }}</strong></td><td>{{ f.status_fisier }}</td><td><a href="/fisiere/delete/{{ f.id_fisier }}" style="color:red; text-decoration:none;">Șterge</a></td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

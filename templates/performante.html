@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><title>Performanțe</title>
+<style>
+    body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; }
+    .card { max-width: 1050px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    th { background: #6c5ce7; color: white; padding: 15px; text-align: left; border-radius: 10px 10px 0 0; }
+    td { padding: 15px; border-bottom: 1px solid #eee; }
+    .val { font-weight: bold; color: #6c5ce7; }
+</style></head>
+<body>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1>📊 Jurnal performanță</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+        <p>Log-uri detaliate pentru toate operațiile de criptare executate.</p>
+
+        <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+            <tr><th>Log ID</th><th>Fișier</th><th>Framework</th><th>Timp (ms)</th><th>Memorie (KB)</th></tr>
+            {% for p in items %}
+            <tr>
+                <td>#{{ p.id_log }}</td>
+                <td>ID Fișier: {{ p.id_fisier }}</td>
+                <td>ID Framework: {{ p.id_framework }}</td>
+                <td class="val">{{ p.timp_executie_ms }} ms</td>
+                <td class="val">{{ p.memorie_peak_kb }} KB</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>

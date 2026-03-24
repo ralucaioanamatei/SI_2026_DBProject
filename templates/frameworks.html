@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head><meta charset="UTF-8"><title>Frameworks</title>
+<style>
+    body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; }
+    .card { max-width: 850px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    th { color: #6c5ce7; text-align: left; padding: 15px; }
+    td { padding: 15px; border-bottom: 1px solid #f1f0ff; }
+    form { display: flex; gap: 15px; margin-bottom: 30px; }
+    input, button { padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; }
+</style></head>
+<body>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1>🛠️ Framework-uri</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="text" name="nume" placeholder="Nume (ex: OpenSSL)" required style="flex-grow:1;">
+            <input type="text" name="versiune" placeholder="Versiune">
+            <button type="submit" style="background:#6c5ce7; color:white; border:none; cursor:pointer; font-weight:bold;">Adaugă</button>
+        </form>
+
+        <table style="width:100%;">
+            <tr><th>ID</th><th>Nume Framework</th><th>Versiune</th><th>Acțiuni</th></tr>
+            {% for f in items %}
+            <tr><td>#{{ f.id_framework }}</td><td><strong>{{ f.nume }}</strong></td><td>{{ f.versiune if f.versiune else '-' }}</td><td><a href="/frameworks/delete/{{ f.id_framework }}" style="color:red; text-decoration:none;">Șterge</a></td></tr>
+            {% endfor %}
+        </table>
+    </div>
+</body>
+</html>
