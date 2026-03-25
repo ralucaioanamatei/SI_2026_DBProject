@@ -6,6 +6,7 @@ from repositories.fisier_repo import FisierRepository
 from repositories.cheie_repo import CheieRepository
 from repositories.performanta_repo import PerformantaRepository
 import sqlalchemy.exc
+from services.crypto_manager import CryptoManagerService
 
 app = Flask(__name__)
 app.secret_key = "kms_premium_violet_key"
@@ -135,6 +136,47 @@ def performante():
     items = PerformantaRepository(db).read()
     db.close()
     return render_template('performante.html', items=items)
+
+@app.route('/operatii', methods=['GET', 'POST'])
+def operatii():
+    db = SessionLocal()
+    repo_fis = FisierRepository(db)
+    repo_chei = CheieRepository(db)
+    repo_fw = FrameworkRepository(db)
+    repo_perf = PerformantaRepository(db)
+    
+    crypto_service = CryptoManagerService(repo_fis, repo_chei, repo_perf)
+
+    if request.method == 'POST':
+        try:
+            actiune = request.form.get('actiune') # Poate fi 'cripteaza' sau 'decripteaza'
+            id_fisier = int(request.form.get('id_fisier'))
+            id_cheie = int(request.form.get('id_cheie'))
+            
+            # Pentru simplitate, presupunem ca folosim primul framework din DB (ex: OpenSSL)
+            # In productie, ai putea avea un dropdown si pentru framework
+            id_framework = 1 
+
+            if actiune == 'cripteaza':
+                cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, id_framework)
+                flash(f"Fișier criptat cu succes! Salvat la: {cale_noua}", "success")
+            elif actiune == 'decripteaza':
+                cale_noua = crypto_service.decripteaza_fisier(id_fisier, id_cheie)
+                flash(f"Fișier decriptat cu succes! Salvat la: {cale_noua}", "success")
+                
+        except Exception as e:
+            flash(f"Eroare la procesare (OpenSSL): {str(e)}", "error")
+        finally:
+            db.close()
+            
+        return redirect(url_for('operatii'))
+
+    # Daca e GET (doar afisare pagina), aducem datele pentru dropdown-uri
+    fisiere = repo_fis.read()
+    chei = repo_chei.read()
+    db.close()
+    
+    return render_template('operatii.html', fisiere=fisiere, chei=chei)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

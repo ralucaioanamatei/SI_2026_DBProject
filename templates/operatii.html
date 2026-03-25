@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Operatii Criptografice</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #111827;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 30px 40px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .btn-inapoi {
+            background-color: #e5e7eb;
+            color: #374151;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .btn-inapoi:hover {
+            background-color: #d1d5db;
+            color: #111827;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #ffffff;
+            box-sizing: border-box;
+        }
+        select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: white;
+            text-align: center;
+        }
+        .btn-cripteaza {
+            background-color: #6366f1;
+        }
+        .btn-cripteaza:hover {
+            background-color: #4f46e5;
+        }
+        .btn-decripteaza {
+            background-color: #374151;
+        }
+        .btn-decripteaza:hover {
+            background-color: #1f2937;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Operatii Criptografice</h1>
+        <a href="/" class="back-link">&larr; Dashboard</a>
+    </div>
+
+    <div class="messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <form method="POST" action="/operatii">
+        
+        <div class="form-group">
+            <label for="id_fisier">Selecteaza Fisierul:</label>
+            <select name="id_fisier" id="id_fisier" required>
+                <option value="" disabled selected>-- Alege un fisier din baza de date --</option>
+                {% for f in fisiere %}
+                    <option value="{{ f.id_fisier }}">{{ f.nume_original }} (Status: {{ f.status_fisier }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="id_cheie">Selecteaza Cheia Criptografica:</label>
+            <select name="id_cheie" id="id_cheie" required>
+                <option value="" disabled selected>-- Alege o cheie din baza de date --</option>
+                {% for c in chei %}
+                    <option value="{{ c.id_cheie }}">Cheia #{{ c.id_cheie }} (Algoritm ID: {{ c.id_algoritm }})</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" name="actiune" value="cripteaza" class="btn btn-cripteaza">Cripteaza Fisierul</button>
+            <button type="submit" name="actiune" value="decripteaza" class="btn btn-decripteaza">Decripteaza Fisierul</button>
+        </div>
+
+    </form>
+</div>
+
+</body>
+</html>
