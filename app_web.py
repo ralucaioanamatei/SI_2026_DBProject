@@ -102,7 +102,7 @@ def chei():
     if request.method == 'POST':
         try:
             val_hex = request.form['valoare'].strip()
-            val_bytes = bytes.fromhex(val_hex) # Conversie HEX în Bytes
+            val_bytes = bytes.fromhex(val_hex) 
             repo.create(
                 id_algoritm=int(request.form['id_algo']),
                 valoare_criptata=val_bytes,
