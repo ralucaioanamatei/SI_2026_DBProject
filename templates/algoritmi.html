@@ -22,7 +22,7 @@
 </head>
 <body>
     <div class="card">
-        <div class="header"><h1>⚙️ Management algoritmi</h1><a href="/" style="text-decoration:none; color:#6c5ce7; font-weight:bold;">← Dashboard</a></div>
+        <div class="header"><h1> Management algoritmi</h1><a href="/" style="text-decoration:none; color:#6c5ce7; font-weight:bold;">← Dashboard</a></div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}

@@ -11,7 +11,7 @@
 </style></head>
 <body>
     <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h1>🛠️ Framework-uri</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1> Framework-uri</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}

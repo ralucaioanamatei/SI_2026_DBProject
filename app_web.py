@@ -47,9 +47,11 @@ def frameworks():
     if request.method == 'POST':
         try:
             repo.create(nume=request.form['nume'], versiune=request.form.get('versiune'))
-            flash("Framework înregistrat!", "success")
+            flash("Framework înregistrat cu succes!", "success")
+        except sqlalchemy.exc.IntegrityError:
+            flash("Eroare: Această combinație de nume și versiune pentru framework există deja!", "error")
         except Exception as e:
-            flash(f"Eroare: {str(e)}", "error")
+            flash(f"Eroare neașteptată: {str(e)}", "error")
         finally:
             db.close()
         return redirect(url_for('frameworks'))
