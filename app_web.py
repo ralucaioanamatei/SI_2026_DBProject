@@ -5,8 +5,12 @@ from repositories.framework_repo import FrameworkRepository
 from repositories.fisier_repo import FisierRepository
 from repositories.cheie_repo import CheieRepository
 from repositories.performanta_repo import PerformantaRepository
-import sqlalchemy.exc
 from services.crypto_manager import CryptoManagerService
+import sqlalchemy.exc
+
+# Importuri pentru generare RSA
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
 
 app = Flask(__name__)
 app.secret_key = "kms_premium_violet_key"
@@ -99,29 +103,52 @@ def delete_fisier(id):
 @app.route('/chei', methods=['GET', 'POST'])
 def chei():
     db = SessionLocal()
-    repo = CheieRepository(db)
+    repo_chei = CheieRepository(db)
+    repo_algo = AlgoritmRepository(db)
+    
     if request.method == 'POST':
         try:
-            val_hex = request.form['valoare'].strip()
-            val_bytes = bytes.fromhex(val_hex) 
-            repo.create(
-                id_algoritm=int(request.form['id_algo']),
-                valoare_criptata=val_bytes,
-                iv_sau_salt=request.form.get('salt')
-            )
-            flash("Cheia a fost generată și salvată!", "success")
-        except ValueError:
-            flash("Eroare: Format HEX invalid! Folosiți doar 0-9 și A-F.", "error")
+            id_algo = int(request.form['id_algo'])
+            algoritm = repo_algo.read_by_id(id_algo)
+            
+            if not algoritm:
+                raise ValueError("Algoritmul selectat nu există!")
+
+            # GENERARE AUTOMATA RSA DACA E ASIMETRIC
+            if algoritm.tip == 'asimetric':
+                private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+                val_bytes = private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.PKCS8,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
+                iv_sau_salt = "RSA_KEY_PAIR"
+                flash("Cheie RSA generată automat cu succes!", "success")
+            else:
+                # PRELUARE MANUALA PENTRU SIMETRIC
+                val_hex = request.form['valoare'].strip()
+                if not val_hex:
+                    raise ValueError("Pentru algoritmi simetrici, valoarea HEX este obligatorie.")
+                val_bytes = bytes.fromhex(val_hex)
+                iv_sau_salt = request.form.get('salt')
+                flash("Cheia simetrică a fost salvată!", "success")
+
+            repo_chei.create(id_algoritm=id_algo, valoare_criptata=val_bytes, iv_sau_salt=iv_sau_salt)
+            
+        except ValueError as ve:
+            flash(f"Eroare: {str(ve)}", "error")
         except sqlalchemy.exc.IntegrityError:
-            flash("Eroare: ID-ul Algoritmului nu există în baza de date!", "error")
+            flash("Eroare: Problemă de integritate în baza de date!", "error")
         except Exception as e:
-            flash(f"Eroare: {str(e)}", "error")
+            flash(f"Eroare generală: {str(e)}", "error")
         finally:
             db.close()
         return redirect(url_for('chei'))
-    items = repo.read()
+    
+    items = repo_chei.read()
+    algoritmi = repo_algo.read()
     db.close()
-    return render_template('chei.html', items=items)
+    return render_template('chei.html', items=items, algoritmi=algoritmi)
 
 @app.route('/chei/delete/<int:id>')
 def delete_cheie(id):
@@ -149,34 +176,34 @@ def operatii():
 
     if request.method == 'POST':
         try:
-            actiune = request.form.get('actiune') # Poate fi 'cripteaza' sau 'decripteaza'
+            actiune = request.form.get('actiune')
             id_fisier = int(request.form.get('id_fisier'))
             id_cheie = int(request.form.get('id_cheie'))
+            id_framework = int(request.form.get('id_framework'))
             
-            # Pentru simplitate, presupunem ca folosim primul framework din DB (ex: OpenSSL)
-            # In productie, ai putea avea un dropdown si pentru framework
-            id_framework = 1 
+            framework = repo_fw.read_by_id(id_framework)
+            if not framework:
+                raise ValueError("Framework invalid.")
 
             if actiune == 'cripteaza':
-                cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, id_framework)
-                flash(f"Fișier criptat cu succes! Salvat la: {cale_noua}", "success")
+                cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, framework.nume, framework.id_framework)
+                flash(f"Fișier criptat! Salvat la: {cale_noua} (Hash și DB actualizate)", "success")
             elif actiune == 'decripteaza':
-                cale_noua = crypto_service.decripteaza_fisier(id_fisier, id_cheie)
-                flash(f"Fișier decriptat cu succes! Salvat la: {cale_noua}", "success")
+                cale_noua = crypto_service.decripteaza_fisier(id_fisier, id_cheie, framework.nume, framework.id_framework)
+                flash(f"Fișier decriptat! Salvat la: {cale_noua} (Hash și DB actualizate)", "success")
                 
         except Exception as e:
-            flash(f"Eroare la procesare (OpenSSL): {str(e)}", "error")
+            flash(f"Eroare la procesare: {str(e)}", "error")
         finally:
             db.close()
-            
         return redirect(url_for('operatii'))
 
-    # Daca e GET (doar afisare pagina), aducem datele pentru dropdown-uri
     fisiere = repo_fis.read()
     chei = repo_chei.read()
+    frameworks = repo_fw.read()
     db.close()
     
-    return render_template('operatii.html', fisiere=fisiere, chei=chei)
+    return render_template('operatii.html', fisiere=fisiere, chei=chei, frameworks=frameworks)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

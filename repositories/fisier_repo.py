@@ -27,7 +27,7 @@ class FisierRepository:
     def read_by_id(self, id_fisier: int) -> Fisier | None:
         return self.session.query(Fisier).filter(Fisier.id_fisier == id_fisier).first()
 
-    def update(self, id_fisier: int, cale_noua: str = None, status_nou: str = None) -> Fisier | None:
+    def update(self, id_fisier: int, cale_noua: str = None, status_nou: str = None, hash_nou: str = None) -> Fisier | None:
         try:
             fisier = self.read_by_id(id_fisier)
             if fisier:
@@ -35,6 +35,8 @@ class FisierRepository:
                     fisier.cale_stocare = cale_noua
                 if status_nou:
                     fisier.status_fisier = status_nou
+                if hash_nou: 
+                    fisier.hash_sha256 = hash_nou
                 self.session.commit()
                 self.session.refresh(fisier)
             return fisier
