@@ -108,13 +108,13 @@ def chei():
     
     if request.method == 'POST':
         try:
+            import os 
             id_algo = int(request.form['id_algo'])
             algoritm = repo_algo.read_by_id(id_algo)
             
             if not algoritm:
                 raise ValueError("Algoritmul selectat nu există!")
 
-            # GENERARE AUTOMATA RSA DACA E ASIMETRIC
             if algoritm.tip == 'asimetric':
                 private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
                 val_bytes = private_key.private_bytes(
@@ -124,19 +124,27 @@ def chei():
                 )
                 iv_sau_salt = "RSA_KEY_PAIR"
                 flash("Cheie RSA generată automat cu succes!", "success")
+
+            #  ALGORITM SIMETRIC (AES) 
             else:
-                # PRELUARE MANUALA PENTRU SIMETRIC
-                val_hex = request.form['valoare'].strip()
+                val_hex = request.form.get('valoare', '').strip()
+                
                 if not val_hex:
-                    raise ValueError("Pentru algoritmi simetrici, valoarea HEX este obligatorie.")
-                val_bytes = bytes.fromhex(val_hex)
-                iv_sau_salt = request.form.get('salt')
-                flash("Cheia simetrică a fost salvată!", "success")
+                    val_bytes = os.urandom(32)
+                    flash("Cheie simetrică (AES) generată automat!", "success")
+                else:
+                    val_bytes = bytes.fromhex(val_hex)
+                    flash("Cheia simetrică manuală a fost salvată!", "success")
+                
+                iv_sau_salt = request.form.get('salt', '').strip()
+                if not iv_sau_salt:
+                    iv_sau_salt = os.urandom(16).hex()
+                    flash("Vectorul de inițializare (IV) a fost generat automat!", "info")
 
             repo_chei.create(id_algoritm=id_algo, valoare_criptata=val_bytes, iv_sau_salt=iv_sau_salt)
             
         except ValueError as ve:
-            flash(f"Eroare: {str(ve)}", "error")
+            flash(f"Eroare date: {str(ve)}", "error")
         except sqlalchemy.exc.IntegrityError:
             flash("Eroare: Problemă de integritate în baza de date!", "error")
         except Exception as e:

@@ -56,9 +56,15 @@ class CryptoManagerService:
                 f_out.write(date_criptate)
 
         else:
-            iv_hex = cheie.vector_initializare_sau_salt if cheie.vector_initializare_sau_salt else os.urandom(16).hex()
-            iv_bytes = bytes.fromhex(iv_hex)
+            if cheie.vector_initializare_sau_salt == "RSA_KEY_PAIR":
+                raise ValueError("Eroare: Ai selectat o cheie asimetrică (RSA) pentru o operațiune simetrică (AES)!")
 
+            iv_hex = cheie.vector_initializare_sau_salt if cheie.vector_initializare_sau_salt else os.urandom(16).hex()
+            
+            try:
+                iv_bytes = bytes.fromhex(iv_hex)
+            except ValueError:
+                raise ValueError(f"Eroare: Valoarea IV/Salt ('{iv_hex}') nu este un cod HEX valid!")
             if "CLI" in framework_nume.upper() or "SUBPROCESS" in framework_nume.upper():
                 cmd = [
                     "openssl", "enc", "-aes-256-cbc",
