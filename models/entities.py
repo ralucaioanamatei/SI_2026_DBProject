@@ -55,6 +55,7 @@ class Performanta(Base):
     
     timp_executie_ms = Column(Float)
     memorie_peak_kb = Column(Float)
+    timp_pe_octet_ms = Column(Float, nullable=True)
     data_testare = Column(DateTime, default=datetime.utcnow) 
 
     fisier = relationship("Fisier", back_populates="performante")

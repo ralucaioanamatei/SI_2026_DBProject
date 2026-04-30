@@ -24,6 +24,20 @@ class FisierRepository:
     def read(self) -> list[Fisier]:
         return self.session.query(Fisier).all()
 
+    def read_paginat(self, pagina: int, pe_pagina: int):
+        offset_val = (pagina - 1) * pe_pagina
+        
+        fisiere = self.session.query(Fisier).offset(offset_val).limit(pe_pagina).all()
+        
+        #cate fisiere am in total pe pag
+        total_fisiere = self.session.query(Fisier).count()
+        total_pagini = (total_fisiere + pe_pagina - 1) // pe_pagina
+    
+        if total_pagini == 0:
+            total_pagini = 1
+            
+        return fisiere, total_pagini
+    
     def read_by_id(self, id_fisier: int) -> Fisier | None:
         return self.session.query(Fisier).filter(Fisier.id_fisier == id_fisier).first()
 

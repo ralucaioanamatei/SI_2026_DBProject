@@ -8,17 +8,25 @@
     td { padding: 15px; border-bottom: 1px solid #f1f0ff; }
     form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
     input, select, button { padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; }
-    .btn-file { background: #6c5ce7; color: white; grid-column: span 2; font-weight: bold; cursor: pointer; border: none; }
+    .btn-file { background: #6c5ce7; color: white; grid-column: span 2; font-weight: bold; cursor: pointer; border: none; transition: 0.2s;}
+    .btn-file:hover { background: #5548c8; }
+    .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold;}
+    .alert-success { background: #d1fae5; color: #065f46; }
+    .alert-error { background: #fee2e2; color: #991b1b; }
+    .paginare { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; }
+    .btn-paginare { background: #e2dfff; color: #6c5ce7; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; }
+    .btn-paginare:hover { background: #cbbfff; }
+    .pagina-curenta { font-weight: bold; color: #333; }
 </style></head>
 <body>
     <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center;"><h1> Gestiune Fișiere</h1><a href="/" style="text-decoration:none; color:#6c5ce7;">← Dashboard</a></div>
+        <div style="display:flex; justify-content:space-between; align-items:center;"><h1> Gestiune Fișiere</h1><a href="/" style="text-decoration:none; color:#6c5ce7; font-weight:bold;">← Dashboard</a></div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}
         {% endwith %}
 
-        <form method="POST">
+        <form method="POST" action="/fisiere">
             <input type="text" name="nume" placeholder="Nume Original" required>
             <input type="text" name="cale" placeholder="Cale Stocare" required>
             <input type="text" name="hash" placeholder="Hash SHA256" required>
@@ -26,12 +34,27 @@
             <button type="submit" class="btn-file">Înregistrează fișier</button>
         </form>
 
-        <table style="width:100%;">
+        <table style="width:100%; border-collapse: collapse;">
             <tr><th>ID</th><th>Nume</th><th>Status</th><th>Acțiuni</th></tr>
             {% for f in items %}
-            <tr><td>#{{ f.id_fisier }}</td><td><strong>{{ f.nume_original }}</strong></td><td>{{ f.status_fisier }}</td><td><a href="/fisiere/delete/{{ f.id_fisier }}" style="color:red; text-decoration:none;">Șterge</a></td></tr>
+            <tr><td>#{{ f.id_fisier }}</td><td><strong>{{ f.nume_original }}</strong></td><td>{{ f.status_fisier }}</td><td><a href="/fisiere/delete/{{ f.id_fisier }}" style="color:red; text-decoration:none; font-weight:bold;">Șterge</a></td></tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center; padding:20px; color:#666;">Nu există fișiere în baza de date.</td></tr>
             {% endfor %}
         </table>
+
+        <div class="paginare">
+            {% if pagina_curenta > 1 %}
+                <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
+            {% endif %}
+
+            <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
+
+            {% if pagina_curenta < total_pagini %}
+                <a href="?pagina={{ pagina_curenta + 1 }}" class="btn-paginare">Următoarea →</a>
+            {% endif %}
+        </div>
+
     </div>
 </body>
 </html>

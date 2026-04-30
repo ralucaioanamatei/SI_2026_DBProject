@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ro">
-<head><meta charset="UTF-8"><title>KMS - Chei</title>
+<head><meta charset="UTF-8"><title>Baza de date</title> - Chei</title>
 <style>
     body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; color: #4b0082;}
     .card { max-width: 1050px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
@@ -14,6 +14,10 @@
     .btn-key { background: #6c5ce7; color: white; border: none; padding: 12px 30px; border-radius: 10px; font-weight: bold; cursor: pointer; }
     details { cursor: pointer; color: #888; font-size: 0.9em; }
     details span { display: block; background: #eee; padding: 10px; border-radius: 5px; word-break: break-all; margin-top: 5px; color: #333;}
+    .paginare { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; }
+    .btn-paginare { background: #e2dfff; color: #6c5ce7; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; }
+    .btn-paginare:hover { background: #cbbfff; }
+    .pagina-curenta { font-weight: bold; color: #333; }
 </style></head>
 <body>
     <div class="card">
@@ -53,6 +57,19 @@
             </tr>
             {% endfor %}
         </table>
+
+       
+        <div class="paginare">
+            {% if pagina_curenta > 1 %}
+                <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
+            {% endif %}
+
+            <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
+
+            {% if pagina_curenta < total_pagini %}
+                <a href="?pagina={{ pagina_curenta + 1 }}" class="btn-paginare">Următoarea →</a>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

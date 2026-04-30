@@ -18,6 +18,18 @@ class AlgoritmRepository:
 
     def read(self) -> list[Algoritm]:
         return self.session.query(Algoritm).all()
+    
+    def read_paginat(self, pagina: int, pe_pagina: int):
+        offset_val = (pagina - 1) * pe_pagina
+        
+        items = self.session.query(Algoritm).offset(offset_val).limit(pe_pagina).all()
+        
+        total_items = self.session.query(Algoritm).count()
+        total_pagini = (total_items + pe_pagina - 1) // pe_pagina
+        if total_pagini == 0:
+            total_pagini = 1
+            
+        return items, total_pagini
 
     def read_by_id(self, id_algoritm: int) -> Algoritm | None:
         return self.session.query(Algoritm).filter(Algoritm.id_algoritm == id_algoritm).first()

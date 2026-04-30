@@ -40,6 +40,7 @@ CREATE TABLE PERFORMANTE (
     id_framework INT NOT NULL,
     timp_executie_ms FLOAT,
     memorie_peak_kb FLOAT,
+    timp_pe_octet_ms FLOAT,
     data_testare DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
     CONSTRAINT chk_timp CHECK (timp_executie_ms IS NULL OR timp_executie_ms >= 0),
     CONSTRAINT chk_memorie CHECK (memorie_peak_kb IS NULL OR memorie_peak_kb >= 0),

@@ -18,6 +18,10 @@
         th { text-align: left; padding: 15px; color: #6c5ce7; border-bottom: 2px solid #f0eeff; }
         td { padding: 15px; border-bottom: 1px solid #f9f8ff; }
         .del { color: #ff7675; text-decoration: none; font-weight: bold; }
+        .paginare { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; }
+        .btn-paginare { background: #e2dfff; color: #6c5ce7; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; }
+        .btn-paginare:hover { background: #cbbfff; }
+        .pagina-curenta { font-weight: bold; color: #333; }
     </style>
 </head>
 <body>
@@ -40,6 +44,18 @@
             <tr><td>#{{ item.id_algoritm }}</td><td><strong>{{ item.nume }}</strong></td><td>{{ item.tip }}</td><td><a href="/algoritmi/delete/{{ item.id_algoritm }}" class="del">Șterge</a></td></tr>
             {% endfor %}
         </table>
+
+        <div class="paginare">
+            {% if pagina_curenta > 1 %}
+                <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
+            {% endif %}
+
+            <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
+
+            {% if pagina_curenta < total_pagini %}
+                <a href="?pagina={{ pagina_curenta + 1 }}" class="btn-paginare">Următoarea →</a>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>

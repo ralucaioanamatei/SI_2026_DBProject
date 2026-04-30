@@ -34,9 +34,11 @@ def algoritmi():
         finally:
             db.close()
         return redirect(url_for('algoritmi'))
-    items = repo.read()
+    
+    pagina = request.args.get('pagina', 1, type=int)
+    items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=5)
     db.close()
-    return render_template('algoritmi.html', items=items)
+    return render_template('algoritmi.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
 
 @app.route('/algoritmi/delete/<int:id>')
 def delete_algoritm(id):
@@ -60,9 +62,12 @@ def frameworks():
         finally:
             db.close()
         return redirect(url_for('frameworks'))
-    items = repo.read()
+   
+    pagina = request.args.get('pagina', 1, type=int)
+    items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=5)
+    
     db.close()
-    return render_template('frameworks.html', items=items)
+    return render_template('frameworks.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
 
 @app.route('/frameworks/delete/<int:id>')
 def delete_framework(id):
@@ -89,9 +94,13 @@ def fisiere():
         finally:
             db.close()
         return redirect(url_for('fisiere'))
-    items = repo.read()
+    
+    pagina = request.args.get('pagina', 1, type=int)
+    
+    items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=5)
     db.close()
-    return render_template('fisiere.html', items=items)
+    
+    return render_template('fisiere.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
 
 @app.route('/fisiere/delete/<int:id>')
 def delete_fisier(id):
@@ -153,10 +162,13 @@ def chei():
             db.close()
         return redirect(url_for('chei'))
     
-    items = repo_chei.read()
+    pagina = request.args.get('pagina', 1, type=int)
+    items, total_pagini = repo_chei.read_paginat(pagina=pagina, pe_pagina=10)
+
     algoritmi = repo_algo.read()
+    
     db.close()
-    return render_template('chei.html', items=items, algoritmi=algoritmi)
+    return render_template('chei.html', items=items, algoritmi=algoritmi, pagina_curenta=pagina, total_pagini=total_pagini)
 
 @app.route('/chei/delete/<int:id>')
 def delete_cheie(id):
@@ -168,9 +180,11 @@ def delete_cheie(id):
 @app.route('/performante')
 def performante():
     db = SessionLocal()
-    items = PerformantaRepository(db).read()
+    pagina = request.args.get('pagina', 1, type=int)
+    items, total_pagini = PerformantaRepository(db).read_paginat(pagina=pagina, pe_pagina=10)
     db.close()
-    return render_template('performante.html', items=items)
+    return render_template('performante.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
+
 
 @app.route('/operatii', methods=['GET', 'POST'])
 def operatii():

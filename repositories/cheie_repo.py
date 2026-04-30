@@ -22,6 +22,18 @@ class CheieRepository:
 
     def read(self) -> list[Cheie]:
         return self.session.query(Cheie).all()
+    
+    def read_paginat(self, pagina: int, pe_pagina: int):
+        offset_val = (pagina - 1) * pe_pagina
+        
+        items = self.session.query(Cheie).offset(offset_val).limit(pe_pagina).all()
+        
+        total_items = self.session.query(Cheie).count()
+        total_pagini = (total_items + pe_pagina - 1) // pe_pagina
+        if total_pagini == 0:
+            total_pagini = 1
+            
+        return items, total_pagini
 
     def read_by_id(self, id_cheie: int) -> Cheie | None:
         return self.session.query(Cheie).filter(Cheie.id_cheie == id_cheie).first()

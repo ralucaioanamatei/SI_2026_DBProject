@@ -8,6 +8,10 @@
     td { padding: 15px; border-bottom: 1px solid #f1f0ff; }
     form { display: flex; gap: 15px; margin-bottom: 30px; }
     input, button { padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; }
+    .paginare { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 30px; }
+    .btn-paginare { background: #e2dfff; color: #6c5ce7; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; }
+    .btn-paginare:hover { background: #cbbfff; }
+    .pagina-curenta { font-weight: bold; color: #333; }
 </style></head>
 <body>
     <div class="card">
@@ -29,6 +33,18 @@
             <tr><td>#{{ f.id_framework }}</td><td><strong>{{ f.nume }}</strong></td><td>{{ f.versiune if f.versiune else '-' }}</td><td><a href="/frameworks/delete/{{ f.id_framework }}" style="color:red; text-decoration:none;">Șterge</a></td></tr>
             {% endfor %}
         </table>
+        
+        <div class="paginare">
+            {% if pagina_curenta > 1 %}
+                <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
+            {% endif %}
+
+            <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
+
+            {% if pagina_curenta < total_pagini %}
+                <a href="?pagina={{ pagina_curenta + 1 }}" class="btn-paginare">Următoarea →</a>
+            {% endif %}
+        </div>
     </div>
 </body>
 </html>
