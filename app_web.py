@@ -251,6 +251,13 @@ def operatii():
             if not framework:
                 raise ValueError("Framework invalid.")
 
+            cheie_selectata = repo_chei.read_by_id(id_cheie)
+            if not cheie_selectata:
+                raise ValueError("Cheia selectată nu există.")
+
+            if cheie_selectata.algoritm.tip == 'asimetric' and "CRYPTOGRAPHY" not in framework.nume.upper():
+                raise ValueError("Pentru RSA se poate folosi doar framework-ul Cryptography.")
+
             if actiune == 'cripteaza':
                 cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, framework.nume, framework.id_framework)
                 flash(f"Fișier criptat! Salvat la: {cale_noua} (Hash și DB actualizate)", "success")
@@ -267,9 +274,19 @@ def operatii():
     fisiere = repo_fis.read()
     chei = repo_chei.read()
     frameworks = repo_fw.read()
+
+    chei_select = []
+    for cheie in chei:
+        chei_select.append({
+            "id_cheie": cheie.id_cheie,
+            "id_algoritm": cheie.id_algoritm,
+            "algoritm_nume": cheie.algoritm.nume,
+            "algoritm_tip": cheie.algoritm.tip
+        })
+
     db.close()
     
-    return render_template('operatii.html', fisiere=fisiere, chei=chei, frameworks=frameworks)
+    return render_template('operatii.html', fisiere=fisiere, chei=chei_select, frameworks=frameworks)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

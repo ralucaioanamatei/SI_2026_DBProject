@@ -1,71 +1,251 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ro">
-<head>
-    <meta charset="UTF-8"><title>KMS - Operații</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>KMS - Operații</title>
     <style>
-        body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; color: #4b0082;}
-        .card { max-width: 850px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15); }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .alert { padding: 15px; border-radius: 12px; margin-bottom: 25px; font-weight: bold; }
-        .alert-error { background: #ffebeb; color: #d63031; border-left: 6px solid #d63031; }
-        .alert-success { background: #eafff5; color: #27ae60; border-left: 6px solid #27ae60; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; color: #6c5ce7; }
-        select { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #eeeaff; outline: none; background: #faf9ff; font-size: 1em; }
-        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
-        .btn { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; font-size: 1.1em;}
-        .btn-enc { background: #6c5ce7; } .btn-enc:hover { background: #5649c0; }
-        .btn-dec { background: #00b894; } .btn-dec:hover { background: #00a082; }
+      body {
+        background: #f4f2ff;
+        font-family: "Segoe UI", sans-serif;
+        padding: 40px;
+        color: #4b0082;
+      }
+      .card {
+        max-width: 850px;
+        margin: auto;
+        background: white;
+        padding: 35px;
+        border-radius: 25px;
+        box-shadow: 0 10px 30px rgba(108, 92, 231, 0.15);
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .alert {
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        font-weight: bold;
+      }
+      .alert-error {
+        background: #ffebeb;
+        color: #d63031;
+        border-left: 6px solid #d63031;
+      }
+      .alert-success {
+        background: #eafff5;
+        color: #27ae60;
+        border-left: 6px solid #27ae60;
+      }
+      .alert-info {
+        background: #eaf4ff;
+        color: #0984e3;
+        border-left: 6px solid #0984e3;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #6c5ce7;
+      }
+      select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 2px solid #eeeaff;
+        outline: none;
+        background: #faf9ff;
+        font-size: 1em;
+      }
+      .hint {
+        margin-top: 8px;
+        color: #666;
+        font-size: 0.9em;
+      }
+      .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
+      .btn {
+        flex: 1;
+        padding: 15px;
+        border: none;
+        border-radius: 12px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+        transition: 0.3s;
+        font-size: 1.1em;
+      }
+      .btn-enc {
+        background: #6c5ce7;
+      }
+      .btn-enc:hover {
+        background: #5649c0;
+      }
+      .btn-dec {
+        background: #00b894;
+      }
+      .btn-dec:hover {
+        background: #00a082;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="card">
-        <div class="header">
-            <h1>Procesare Criptografică</h1>
-            <a href="/" style="text-decoration:none; color:#6c5ce7; font-weight:bold;">← Dashboard</a>
+      <div class="header">
+        <h1>Procesare Criptografică</h1>
+        <a
+          href="/"
+          style="text-decoration: none; color: #6c5ce7; font-weight: bold"
+          >← Dashboard</a
+        >
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}{% for cat, msg in messages %}
+      <div class="alert alert-{{cat}}">{{msg}}</div>
+      {% endfor %}{% endif %} {% endwith %}
+
+      <form method="POST" action="/operatii">
+        <div class="form-group">
+          <label>1. Selectează Fișierul:</label>
+          <select name="id_fisier" required>
+            <option value="" disabled selected>-- Alege din DB --</option>
+            {% for f in fisiere %}
+            <option value="{{ f.id_fisier }}">
+              {{ f.nume_original }} (Status actual: {{ f.status_fisier }})
+            </option>
+            {% endfor %}
+          </select>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}{% for cat, msg in messages %}<div class="alert alert-{{cat}}">{{msg}}</div>{% endfor %}{% endif %}
-        {% endwith %}
+        <div class="form-group">
+          <label>2. Selectează Cheia:</label>
+          <select name="id_cheie" id="id_cheie" required>
+            <option value="" disabled selected>-- Alege din DB --</option>
+            {% for c in chei %}
+            <option
+              value="{{ c.id_cheie }}"
+              data-algoritm-tip="{{ c.algoritm_tip }}"
+            >
+              Cheia #{{ c.id_cheie }} - {{ c.algoritm_nume }} ({{ c.algoritm_tip
+              }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
 
-        <form method="POST" action="/operatii">
-            <div class="form-group">
-                <label>1. Selectează Fișierul:</label>
-                <select name="id_fisier" required>
-                    <option value="" disabled selected>-- Alege din DB --</option>
-                    {% for f in fisiere %}
-                    <option value="{{ f.id_fisier }}">{{ f.nume_original }} (Status actual: {{ f.status_fisier }})</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <div class="form-group">
+          <label>3. Selectează Framework-ul Motorului (Comparare):</label>
+          <select name="id_framework" id="id_framework" required>
+            <option value="" disabled selected>
+              -- Alege Wrapper sau Subprocess CLI --
+            </option>
+            {% for fw in frameworks %}
+            <option
+              value="{{ fw.id_framework }}"
+              data-framework-nume="{{ fw.nume|upper }}"
+            >
+              Framework: {{ fw.nume }} (v{{ fw.versiune }})
+            </option>
+            {% endfor %}
+          </select>
+          <div class="hint" id="framework_hint">
+            Pentru AES poți compara OpenSSL CLI, Cryptography și PyCryptodome.
+            Pentru RSA este disponibil doar Cryptography.
+          </div>
+        </div>
 
-            <div class="form-group">
-                <label>2. Selectează Cheia:</label>
-                <select name="id_cheie" required>
-                    <option value="" disabled selected>-- Alege din DB --</option>
-                    {% for c in chei %}
-                    <option value="{{ c.id_cheie }}">Cheia #{{ c.id_cheie }} - Pentru Algoritmul {{ c.id_algoritm }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>3. Selectează Framework-ul Motorului (Comparare):</label>
-                <select name="id_framework" required>
-                    <option value="" disabled selected>-- Alege Wrapper sau Subprocess CLI --</option>
-                    {% for fw in frameworks %}
-                    <option value="{{ fw.id_framework }}">Framework: {{ fw.nume }} (v{{ fw.versiune }})</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="btn-group">
-                <button type="submit" name="actiune" value="cripteaza" class="btn btn-enc"> Criptează Fișier</button>
-                <button type="submit" name="actiune" value="decripteaza" class="btn btn-dec">Decriptează Fișier</button>
-            </div>
-        </form>
-        
+        <div class="btn-group">
+          <button
+            type="submit"
+            name="actiune"
+            value="cripteaza"
+            class="btn btn-enc"
+          >
+            Criptează Fișier
+          </button>
+          <button
+            type="submit"
+            name="actiune"
+            value="decripteaza"
+            class="btn btn-dec"
+          >
+            Decriptează Fișier
+          </button>
+        </div>
+      </form>
     </div>
-</body>
+
+    <script>
+      const cheieSelect = document.getElementById("id_cheie");
+      const frameworkSelect = document.getElementById("id_framework");
+      const frameworkHint = document.getElementById("framework_hint");
+
+      function actualizeazaFrameworkuriDisponibile() {
+        const optiuneCheie = cheieSelect.options[cheieSelect.selectedIndex];
+        const tipAlgoritm = optiuneCheie
+          ? optiuneCheie.dataset.algoritmTip
+          : "";
+        const esteRSA = tipAlgoritm === "asimetric";
+
+        for (const optiuneFramework of frameworkSelect.options) {
+          if (!optiuneFramework.value) {
+            continue;
+          }
+
+          const numeFramework = optiuneFramework.dataset.frameworkNume || "";
+          const esteCryptography = numeFramework.includes("CRYPTOGRAPHY");
+
+          optiuneFramework.hidden = esteRSA && !esteCryptography;
+          optiuneFramework.disabled = esteRSA && !esteCryptography;
+        }
+
+        if (esteRSA) {
+          const frameworkCurent =
+            frameworkSelect.options[frameworkSelect.selectedIndex];
+          const frameworkCurentEsteCryptography =
+            frameworkCurent &&
+            (frameworkCurent.dataset.frameworkNume || "").includes(
+              "CRYPTOGRAPHY",
+            );
+
+          if (!frameworkCurentEsteCryptography) {
+            const optiuneCryptography = Array.from(
+              frameworkSelect.options,
+            ).find(function (optiune) {
+              return (
+                optiune.value &&
+                (optiune.dataset.frameworkNume || "").includes("CRYPTOGRAPHY")
+              );
+            });
+
+            if (optiuneCryptography) {
+              frameworkSelect.value = optiuneCryptography.value;
+            }
+          }
+
+          frameworkHint.textContent =
+            "Pentru RSA se folosește doar Cryptography, deoarece în cod criptarea/decriptarea RSA este făcută cu biblioteca cryptography.";
+        } else {
+          frameworkHint.textContent =
+            "Pentru AES poți compara OpenSSL CLI, Cryptography și PyCryptodome.";
+        }
+      }
+
+      cheieSelect.addEventListener(
+        "change",
+        actualizeazaFrameworkuriDisponibile,
+      );
+      actualizeazaFrameworkuriDisponibile();
+    </script>
+  </body>
 </html>
