@@ -7,6 +7,8 @@ from cryptography.hazmat.primitives import padding, hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.backends import default_backend
+from Crypto.Cipher import AES as PyCryptoAES
+from Crypto.Util.Padding import pad as pycrypto_pad, unpad as pycrypto_unpad
 
 class CryptoManagerService:
     def __init__(self, fisier_repo, cheie_repo, performanta_repo):
@@ -72,7 +74,7 @@ class CryptoManagerService:
             except ValueError:
                 raise ValueError(f"Eroare: Valoarea IV/Salt ('{iv_hex}') nu este un cod HEX valid!")
             
-            if "CLI" in framework_nume.upper() or "SUBPROCESS" in framework_nume.upper():
+            if "OPENSSL" in framework_nume.upper() or "CLI" in framework_nume.upper() or "SUBPROCESS" in framework_nume.upper():
                 cmd = [
                     "openssl", "enc", "-aes-256-cbc",
                     "-in", cale_intrare, "-out", cale_iesire,
@@ -84,7 +86,32 @@ class CryptoManagerService:
                     raise RuntimeError(f"Eroare OpenSSL CLI: {rezultat.stderr}")
                 #aici procesul extern gestioneaza memoria
                 memorie_utilizata_kb=0
-            
+
+            elif "PYCRYPTODOME" in framework_nume.upper() or "PYCRYPTO" in framework_nume.upper():
+                cipher_pycrypto = PyCryptoAES.new(
+                    cheie.valoare_criptata,
+                    PyCryptoAES.MODE_CBC,
+                    iv_bytes
+                )
+
+                ultimul_chunk = b""
+
+                with open(cale_intrare, 'rb') as f_in, open(cale_iesire, 'wb') as f_out:
+                    while True:
+                        chunk = f_in.read(chunk_size)
+
+                        if chunk:
+                            if ultimul_chunk:
+                                f_out.write(cipher_pycrypto.encrypt(ultimul_chunk))
+
+                            ultimul_chunk = chunk
+                        else:
+                            date_finale = pycrypto_pad(ultimul_chunk, PyCryptoAES.block_size)
+                            f_out.write(cipher_pycrypto.encrypt(date_finale))
+                            break
+
+                memorie_utilizata_kb = chunk_size / 1024.0
+
             else:
                 cipher = Cipher(algorithms.AES(cheie.valoare_criptata), modes.CBC(iv_bytes), backend=self.backend)
                 encryptor = cipher.encryptor()
@@ -114,8 +141,13 @@ class CryptoManagerService:
         self.fisier_repo.update(id_fisier, cale_noua=cale_iesire, status_nou="criptat", hash_nou=noul_hash)
         
         self.performanta_repo.create(
-            id_fisier=id_fisier, id_cheie=id_cheie, id_framework=id_framework,
-            timp_ms=timp_ms, memorie_kb=memorie_utilizata_kb, timp_pe_octet_ms=timp_pe_octet_ms
+            id_fisier=id_fisier,
+            id_cheie=id_cheie,
+            id_framework=id_framework,
+            timp_ms=timp_ms,
+            memorie_kb=memorie_utilizata_kb,
+            timp_pe_octet_ms=timp_pe_octet_ms,
+            tip_operatie="criptare"
         )
 
         print(f"Timp total: {timp_ms:.4f} ms; Timp/octet: {timp_pe_octet_ms:.6f} ms; Memorie Chunk: {memorie_utilizata_kb} KB")
@@ -151,7 +183,7 @@ class CryptoManagerService:
             iv_hex = cheie.vector_initializare_sau_salt
             iv_bytes = bytes.fromhex(iv_hex)
 
-            if "CLI" in framework_nume.upper() or "SUBPROCESS" in framework_nume.upper():
+            if "OPENSSL" in framework_nume.upper() or "CLI" in framework_nume.upper() or "SUBPROCESS" in framework_nume.upper():
                 cmd = [
                     "openssl", "enc", "-aes-256-cbc", "-d",
                     "-in", cale_intrare, "-out", cale_iesire,
@@ -162,6 +194,36 @@ class CryptoManagerService:
                     raise RuntimeError(f"Eroare OpenSSL CLI: {rezultat.stderr}")
                 
                 memorie_utilizata_kb = 0
+            elif "PYCRYPTODOME" in framework_nume.upper() or "PYCRYPTO" in framework_nume.upper():
+                cipher_pycrypto = PyCryptoAES.new(
+                    cheie.valoare_criptata,
+                    PyCryptoAES.MODE_CBC,
+                    iv_bytes
+                )
+
+                ultimul_chunk = b""
+
+                with open(cale_intrare, 'rb') as f_in, open(cale_iesire, 'wb') as f_out:
+                    while True:
+                        chunk = f_in.read(chunk_size)
+
+                        if chunk:
+                            if ultimul_chunk:
+                                date_decriptate = cipher_pycrypto.decrypt(ultimul_chunk)
+                                f_out.write(date_decriptate)
+
+                            ultimul_chunk = chunk
+                        else:
+                            if not ultimul_chunk:
+                                raise ValueError("Fișierul criptat este gol sau invalid.")
+
+                            date_finale = cipher_pycrypto.decrypt(ultimul_chunk)
+                            date_fara_padding = pycrypto_unpad(date_finale, PyCryptoAES.block_size)
+                            f_out.write(date_fara_padding)
+                            break
+
+                memorie_utilizata_kb = chunk_size / 1024.0
+
             else:
                 cipher = Cipher(algorithms.AES(cheie.valoare_criptata), modes.CBC(iv_bytes), backend=self.backend)
                 decryptor = cipher.decryptor()
@@ -194,8 +256,14 @@ class CryptoManagerService:
         self.fisier_repo.update(id_fisier, cale_noua=cale_iesire, status_nou="decriptat", hash_nou=noul_hash)
         
         self.performanta_repo.create(
-            id_fisier=id_fisier, id_cheie=id_cheie, id_framework=id_framework,
-            timp_ms=timp_ms, memorie_kb=memorie_utilizata_kb, timp_pe_octet_ms=timp_pe_octet_ms
+            id_fisier=id_fisier,
+            id_cheie=id_cheie,
+            id_framework=id_framework,
+            timp_ms=timp_ms,
+            memorie_kb=memorie_utilizata_kb,
+            timp_pe_octet_ms=timp_pe_octet_ms,
+            tip_operatie="decriptare"
         )
+        
         print(f"Timp decriptare total: { timp_ms: .4f} ms; Timp/octet: {timp_pe_octet_ms:.6f} ms; Memorie Chunk: {memorie_utilizata_kb} KB")
         return cale_iesire

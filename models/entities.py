@@ -53,6 +53,7 @@ class Performanta(Base):
     id_cheie = Column(Integer, ForeignKey('CHEI.id_cheie', ondelete="CASCADE"), nullable=False)
     id_framework = Column(Integer, ForeignKey('FRAMEWORKS.id_framework', ondelete="CASCADE"), nullable=False)
     
+    tip_operatie = Column(String(20), nullable=False)
     timp_executie_ms = Column(Float)
     memorie_peak_kb = Column(Float)
     timp_pe_octet_ms = Column(Float, nullable=True)

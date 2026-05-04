@@ -38,13 +38,27 @@ CREATE TABLE PERFORMANTE (
     id_fisier INT NOT NULL,
     id_cheie INT NOT NULL,
     id_framework INT NOT NULL,
+    tip_operatie VARCHAR(20) NOT NULL,
     timp_executie_ms FLOAT,
     memorie_peak_kb FLOAT,
     timp_pe_octet_ms FLOAT,
     data_testare DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, 
+
+    CONSTRAINT chk_tip_operatie CHECK (tip_operatie IN ('criptare', 'decriptare')),
     CONSTRAINT chk_timp CHECK (timp_executie_ms IS NULL OR timp_executie_ms >= 0),
     CONSTRAINT chk_memorie CHECK (memorie_peak_kb IS NULL OR memorie_peak_kb >= 0),
+
     CONSTRAINT fk_perf_fisier FOREIGN KEY (id_fisier) REFERENCES FISIERE(id_fisier) ON DELETE CASCADE,
     CONSTRAINT fk_perf_cheie FOREIGN KEY (id_cheie) REFERENCES CHEI(id_cheie) ON DELETE CASCADE,
     CONSTRAINT fk_perf_framework FOREIGN KEY (id_framework) REFERENCES FRAMEWORKS(id_framework) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+
+INSERT IGNORE INTO ALGORITMI (nume, tip) VALUES
+('AES', 'simetric'),
+('RSA', 'asimetric');
+
+INSERT IGNORE INTO FRAMEWORKS (nume, versiune) VALUES
+('OpenSSL CLI', '3.x'),
+('Cryptography', '42.0.5'),
+('PyCryptodome', '3.x');

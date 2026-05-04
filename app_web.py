@@ -7,6 +7,9 @@ from repositories.cheie_repo import CheieRepository
 from repositories.performanta_repo import PerformantaRepository
 from services.crypto_manager import CryptoManagerService
 import sqlalchemy.exc
+import os
+import hashlib
+
 
 # Importuri pentru generare RSA
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -14,6 +17,19 @@ from cryptography.hazmat.primitives import serialization
 
 app = Flask(__name__)
 app.secret_key = "kms_premium_violet_key"
+
+#functie pentru calculare hash sha 256 pentru fisier
+def calculeaza_hash_fisier(cale_fisier):
+    sha256 = hashlib.sha256()
+
+    #deschide fisierul in mod binar si citeste-l in bucati pentru a calcula hash-ul
+    with open(cale_fisier, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            sha256.update(chunk)
+            #actualizeaza hash-ul cu fiecare bucata citita
+    
+    #transforma rezultatul intr un string hexadecimal
+    return sha256.hexdigest()
 
 @app.route('/')
 def index():
@@ -80,27 +96,43 @@ def delete_framework(id):
 def fisiere():
     db = SessionLocal()
     repo = FisierRepository(db)
+
     if request.method == 'POST':
         try:
+            cale_fisier = request.form['cale'].strip()
+
+            if not os.path.isfile(cale_fisier):
+                raise ValueError("Calea introdusă nu indică un fișier existent.")
+
+            hash_final = calculeaza_hash_fisier(cale_fisier)
+
             repo.create(
-                nume_original=request.form['nume'],
-                cale_stocare=request.form['cale'],
-                hash_sha256=request.form['hash'],
+                nume_original=request.form['nume'].strip(),
+                cale_stocare=cale_fisier,
+                hash_sha256=hash_final,
                 status_fisier=request.form['status']
             )
-            flash("Fișier salvat!", "success")
+
+            flash("Fișier salvat! Hash-ul SHA-256 a fost calculat automat.", "success")
+
         except Exception as e:
             flash(f"Eroare: {str(e)}", "error")
         finally:
             db.close()
+
         return redirect(url_for('fisiere'))
-    
+
     pagina = request.args.get('pagina', 1, type=int)
-    
     items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=5)
+
     db.close()
-    
-    return render_template('fisiere.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
+
+    return render_template(
+        'fisiere.html',
+        items=items,
+        pagina_curenta=pagina,
+        total_pagini=total_pagini
+    )
 
 @app.route('/fisiere/delete/<int:id>')
 def delete_fisier(id):
@@ -180,10 +212,22 @@ def delete_cheie(id):
 @app.route('/performante')
 def performante():
     db = SessionLocal()
+    repo = PerformantaRepository(db)
+
     pagina = request.args.get('pagina', 1, type=int)
-    items, total_pagini = PerformantaRepository(db).read_paginat(pagina=pagina, pe_pagina=10)
+
+    statistici = repo.read_statistici_medii()
+    items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=10)
+
     db.close()
-    return render_template('performante.html', items=items, pagina_curenta=pagina, total_pagini=total_pagini)
+
+    return render_template(
+        'performante.html',
+        items=items,
+        statistici=statistici,
+        pagina_curenta=pagina,
+        total_pagini=total_pagini
+    )
 
 
 @app.route('/operatii', methods=['GET', 'POST'])

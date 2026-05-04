@@ -27,9 +27,11 @@
         {% endwith %}
 
         <form method="POST" action="/fisiere">
+             <div style="grid-column: span 2; color:#6c5ce7; font-weight:bold;">
+                Hash-ul SHA-256 se calculează automat pe baza fișierului selectat.
+            </div>
             <input type="text" name="nume" placeholder="Nume Original" required>
             <input type="text" name="cale" placeholder="Cale Stocare" required>
-            <input type="text" name="hash" placeholder="Hash SHA256" required>
             <select name="status"><option value="original">original</option><option value="criptat">criptat</option><option value="decriptat">decriptat</option></select>
             <button type="submit" class="btn-file">Înregistrează fișier</button>
         </form>
