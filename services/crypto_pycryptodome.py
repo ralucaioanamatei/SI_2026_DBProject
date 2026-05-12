@@ -109,3 +109,4 @@ def decripteaza_pycryptodome(cale_intrare, cale_iesire, cheie, algoritm, chunk_s
         memorie_utilizata_kb = chunk_size / 1024.0
 
     return memorie_utilizata_kb
+

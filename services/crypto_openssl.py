@@ -106,3 +106,4 @@ def decripteaza_openssl(cale_intrare, cale_iesire, cheie, algoritm, chunk_size):
         memorie_utilizata_kb = 0
 
     return memorie_utilizata_kb
+

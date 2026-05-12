@@ -255,8 +255,6 @@ def operatii():
             if not cheie_selectata:
                 raise ValueError("Cheia selectată nu există.")
 
-        
-
             if actiune == 'cripteaza':
                 cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, framework.nume, framework.id_framework)
                 flash(f"Fișier criptat! Salvat la: {cale_noua} (Hash și DB actualizate)", "success")

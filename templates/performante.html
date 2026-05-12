@@ -110,7 +110,7 @@
                 <td>{{ p.tip_operatie }}</td>
                 <td class="val">{{ "%.4f"|format(p.timp_executie_ms or 0) }} ms</td>
                 <td class="val">{{ "%.2f"|format(p.memorie_peak_kb or 0) }} KB</td>
-                <td class="val">{{ "%.8f"|format(p.timp_pe_octet_ms or 0) }}</td>
+                <td class="val">{{ "%.8f"|format(p.timp_pe_octet_ms or 0) }} ms/octet</td>
             </tr>
             {% else %}
             <tr>
@@ -126,6 +126,7 @@
                 <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
             {% endif %}
 
+            
             <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
 
             {% if pagina_curenta < total_pagini %}
