@@ -255,8 +255,7 @@ def operatii():
             if not cheie_selectata:
                 raise ValueError("Cheia selectată nu există.")
 
-            if cheie_selectata.algoritm.tip == 'asimetric' and "CRYPTOGRAPHY" not in framework.nume.upper():
-                raise ValueError("Pentru RSA se poate folosi doar framework-ul Cryptography.")
+        
 
             if actiune == 'cripteaza':
                 cale_noua = crypto_service.cripteaza_fisier(id_fisier, id_cheie, framework.nume, framework.id_framework)

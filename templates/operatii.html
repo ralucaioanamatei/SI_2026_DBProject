@@ -159,8 +159,7 @@
             {% endfor %}
           </select>
           <div class="hint" id="framework_hint">
-            Pentru AES poți compara OpenSSL CLI, Cryptography și PyCryptodome.
-            Pentru RSA este disponibil doar Cryptography.
+            Pentru AES și RSA poți compara OpenSSL CLI, Cryptography și PyCryptodome.
           </div>
         </div>
 
@@ -185,67 +184,6 @@
       </form>
     </div>
 
-    <script>
-      const cheieSelect = document.getElementById("id_cheie");
-      const frameworkSelect = document.getElementById("id_framework");
-      const frameworkHint = document.getElementById("framework_hint");
 
-      function actualizeazaFrameworkuriDisponibile() {
-        const optiuneCheie = cheieSelect.options[cheieSelect.selectedIndex];
-        const tipAlgoritm = optiuneCheie
-          ? optiuneCheie.dataset.algoritmTip
-          : "";
-        const esteRSA = tipAlgoritm === "asimetric";
-
-        for (const optiuneFramework of frameworkSelect.options) {
-          if (!optiuneFramework.value) {
-            continue;
-          }
-
-          const numeFramework = optiuneFramework.dataset.frameworkNume || "";
-          const esteCryptography = numeFramework.includes("CRYPTOGRAPHY");
-
-          optiuneFramework.hidden = esteRSA && !esteCryptography;
-          optiuneFramework.disabled = esteRSA && !esteCryptography;
-        }
-
-        if (esteRSA) {
-          const frameworkCurent =
-            frameworkSelect.options[frameworkSelect.selectedIndex];
-          const frameworkCurentEsteCryptography =
-            frameworkCurent &&
-            (frameworkCurent.dataset.frameworkNume || "").includes(
-              "CRYPTOGRAPHY",
-            );
-
-          if (!frameworkCurentEsteCryptography) {
-            const optiuneCryptography = Array.from(
-              frameworkSelect.options,
-            ).find(function (optiune) {
-              return (
-                optiune.value &&
-                (optiune.dataset.frameworkNume || "").includes("CRYPTOGRAPHY")
-              );
-            });
-
-            if (optiuneCryptography) {
-              frameworkSelect.value = optiuneCryptography.value;
-            }
-          }
-
-          frameworkHint.textContent =
-            "Pentru RSA se folosește doar Cryptography, deoarece în cod criptarea/decriptarea RSA este făcută cu biblioteca cryptography.";
-        } else {
-          frameworkHint.textContent =
-            "Pentru AES poți compara OpenSSL CLI, Cryptography și PyCryptodome.";
-        }
-      }
-
-      cheieSelect.addEventListener(
-        "change",
-        actualizeazaFrameworkuriDisponibile,
-      );
-      actualizeazaFrameworkuriDisponibile();
-    </script>
   </body>
 </html>
