@@ -218,6 +218,34 @@ def performante():
 
     statistici = repo.read_statistici_medii()
     items, total_pagini = repo.read_paginat(pagina=pagina, pe_pagina=10)
+    ultimele_loguri = repo.read_ultimele_loguri(limita=20)
+
+    chart_data = {
+        "statistici_labels": [
+            f"{s.algoritm} / {s.framework} / {s.tip_operatie}"
+            for s in statistici
+        ],
+        "timp_mediu_ms": [
+            round(float(s.timp_mediu_ms or 0), 4)
+            for s in statistici
+        ],
+        "memorie_medie_kb": [
+            round(float(s.memorie_medie_kb or 0), 4)
+            for s in statistici
+        ],
+        "numar_operatii": [
+            int(s.numar_operatii or 0)
+            for s in statistici
+        ],
+        "log_labels": [
+            f"#{p.id_log}"
+            for p in reversed(ultimele_loguri)
+        ],
+        "log_timp_ms": [
+            round(float(p.timp_executie_ms or 0), 4)
+            for p in reversed(ultimele_loguri)
+        ]
+    }
 
     db.close()
 
@@ -225,6 +253,7 @@ def performante():
         'performante.html',
         items=items,
         statistici=statistici,
+        chart_data=chart_data,
         pagina_curenta=pagina,
         total_pagini=total_pagini
     )

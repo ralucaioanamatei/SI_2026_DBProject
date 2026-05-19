@@ -6,7 +6,7 @@
 
 <style>
     body { background: #f4f2ff; font-family: 'Segoe UI', sans-serif; padding: 40px; }
-    .card { max-width: 1150px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+    .card { max-width: 1200px; margin: auto; background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
     th { background: #6c5ce7; color: white; padding: 15px; text-align: left; }
     td { padding: 15px; border-bottom: 1px solid #eee; }
     .val { font-weight: bold; color: #6c5ce7; }
@@ -17,6 +17,56 @@
     .btn-paginare { background: #e2dfff; color: #6c5ce7; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; transition: 0.2s; }
     .btn-paginare:hover { background: #cbbfff; }
     .pagina-curenta { font-weight: bold; color: #333; }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+        margin-top: 20px;
+    }
+
+    .chart-card {
+        background: #fbfaff;
+        border: 1px solid #e8e2ff;
+        border-radius: 18px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(108, 92, 231, 0.08);
+    }
+
+    .chart-card h3 {
+        margin-top: 0;
+        margin-bottom: 8px;
+        color: #4b0082;
+        font-size: 18px;
+    }
+
+    .chart-card p {
+        margin-top: 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    canvas {
+        width: 100%;
+        height: 320px;
+        background: white;
+        border-radius: 14px;
+    }
+
+    .empty-chart {
+        color: #666;
+        background: white;
+        border-radius: 14px;
+        padding: 30px;
+        text-align: center;
+        border: 1px dashed #cbbfff;
+    }
+
+    @media (max-width: 900px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 </head>
 
@@ -27,7 +77,55 @@
             <a href="/" style="text-decoration:none; color:#6c5ce7; font-weight:bold;">← Dashboard</a>
         </div>
 
-        <p>Log-uri detaliate și statistici medii pentru operațiile criptografice executate.</p>
+        <p>Log-uri detaliate, statistici medii și grafice pentru operațiile criptografice executate.</p>
+
+        <h2 class="section-title">Grafice performanță</h2>
+
+        <div class="info-box">
+            Graficele sunt generate automat din tabela PERFORMANTE. Ele folosesc aceleași date ca tabelele de mai jos, dar le afișează vizual pentru comparații mai rapide.
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Timp mediu pe combinație</h3>
+                <p>Compară timpul mediu pentru fiecare combinație algoritm + framework + operație.</p>
+                {% if chart_data.statistici_labels %}
+                    <canvas id="chartTimpMediu" width="700" height="360"></canvas>
+                {% else %}
+                    <div class="empty-chart">Nu există date pentru grafic.</div>
+                {% endif %}
+            </div>
+
+            <div class="chart-card">
+                <h3>Număr de operații pe combinație</h3>
+                <p>Arată câte teste au contribuit la fiecare medie afișată în tabel.</p>
+                {% if chart_data.statistici_labels %}
+                    <canvas id="chartNumarOperatii" width="700" height="360"></canvas>
+                {% else %}
+                    <div class="empty-chart">Nu există date pentru grafic.</div>
+                {% endif %}
+            </div>
+
+            <div class="chart-card">
+                <h3>Memorie medie pe combinație</h3>
+                <p>Compară memoria medie salvată pentru fiecare combinație. Valorile 0 indică date nemăsurate sau foarte mici.</p>
+                {% if chart_data.statistici_labels %}
+                    <canvas id="chartMemorieMedie" width="700" height="360"></canvas>
+                {% else %}
+                    <div class="empty-chart">Nu există date pentru grafic.</div>
+                {% endif %}
+            </div>
+
+            <div class="chart-card">
+                <h3>Evoluția ultimelor operații</h3>
+                <p>Arată timpul de execuție pentru ultimele log-uri salvate, în ordine cronologică.</p>
+                {% if chart_data.log_labels %}
+                    <canvas id="chartEvolutieTimp" width="700" height="360"></canvas>
+                {% else %}
+                    <div class="empty-chart">Nu există date pentru grafic.</div>
+                {% endif %}
+            </div>
+        </div>
 
         <h2 class="section-title">Statistici medii per combinație</h2>
 
@@ -53,8 +151,20 @@
                 <td>{{ s.tip_operatie }}</td>
                 <td>{{ s.numar_operatii }}</td>
                 <td class="val">{{ "%.4f"|format(s.timp_mediu_ms or 0) }} ms</td>
-                <td class="val">{{ "%.2f"|format(s.memorie_medie_kb or 0) }} KB</td>
-                <td class="val">{{ "%.8f"|format(s.timp_mediu_pe_octet_ms or 0) }} ms/octet</td>
+                <td class="val">
+                    {% if s.memorie_medie_kb and s.memorie_medie_kb > 0 %}
+                        {{ "%.4f"|format(s.memorie_medie_kb) }} KB
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="val">
+                    {% if s.timp_mediu_pe_octet_ms and s.timp_mediu_pe_octet_ms > 0 %}
+                        {{ "%.8f"|format(s.timp_mediu_pe_octet_ms) }} ms/octet
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
             </tr>
             {% else %}
             <tr>
@@ -109,8 +219,20 @@
 
                 <td>{{ p.tip_operatie }}</td>
                 <td class="val">{{ "%.4f"|format(p.timp_executie_ms or 0) }} ms</td>
-                <td class="val">{{ "%.2f"|format(p.memorie_peak_kb or 0) }} KB</td>
-                <td class="val">{{ "%.8f"|format(p.timp_pe_octet_ms or 0) }} ms/octet</td>
+                <td class="val">
+                    {% if p.memorie_peak_kb and p.memorie_peak_kb > 0 %}
+                        {{ "%.4f"|format(p.memorie_peak_kb) }} KB
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td class="val">
+                    {% if p.timp_pe_octet_ms and p.timp_pe_octet_ms > 0 %}
+                        {{ "%.8f"|format(p.timp_pe_octet_ms) }} ms/octet
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
             </tr>
             {% else %}
             <tr>
@@ -126,7 +248,6 @@
                 <a href="?pagina={{ pagina_curenta - 1 }}" class="btn-paginare">← Anterioara</a>
             {% endif %}
 
-            
             <span class="pagina-curenta">Pagina {{ pagina_curenta }} din {{ total_pagini }}</span>
 
             {% if pagina_curenta < total_pagini %}
@@ -134,5 +255,206 @@
             {% endif %}
         </div>
     </div>
+
+<div id="chart-data" data-json='{{ chart_data | tojson | safe }}' style="display:none;"></div>
+
+<script>
+    const chartDataElement = document.getElementById("chart-data");
+    const chartData = chartDataElement
+        ? JSON.parse(chartDataElement.getAttribute("data-json") || "{}")
+        : {};
+
+    function setupCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            return null;
+        }
+
+        const ctx = canvas.getContext("2d");
+        const ratio = window.devicePixelRatio || 1;
+        const cssWidth = canvas.clientWidth;
+        const cssHeight = canvas.clientHeight;
+
+        canvas.width = cssWidth * ratio;
+        canvas.height = cssHeight * ratio;
+        ctx.scale(ratio, ratio);
+
+        return {
+            canvas,
+            ctx,
+            width: cssWidth,
+            height: cssHeight
+        };
+    }
+
+    function scurteazaLabel(label, maxLength = 32) {
+        if (!label) {
+            return "";
+        }
+        return label.length > maxLength ? label.substring(0, maxLength - 3) + "..." : label;
+    }
+
+    function drawHorizontalBarChart(canvasId, labels, values, unit) {
+        const canvasInfo = setupCanvas(canvasId);
+        if (!canvasInfo || !labels.length) {
+            return;
+        }
+
+        const { ctx, width, height } = canvasInfo;
+
+        const paddingLeft = 190;
+        const paddingRight = 50;
+        const paddingTop = 25;
+        const paddingBottom = 35;
+
+        const chartWidth = width - paddingLeft - paddingRight;
+        const chartHeight = height - paddingTop - paddingBottom;
+
+        const maxValue = Math.max(...values, 1);
+        const barGap = 10;
+        const barHeight = Math.max(12, (chartHeight / labels.length) - barGap);
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.font = "12px Segoe UI";
+        ctx.textBaseline = "middle";
+
+        labels.forEach((label, index) => {
+            const value = Number(values[index] || 0);
+            const y = paddingTop + index * (barHeight + barGap);
+            const barWidth = (value / maxValue) * chartWidth;
+
+            ctx.fillStyle = "#4b0082";
+            ctx.fillText(scurteazaLabel(label), 10, y + barHeight / 2);
+
+            ctx.fillStyle = "#e2dfff";
+            ctx.fillRect(paddingLeft, y, chartWidth, barHeight);
+
+            ctx.fillStyle = "#6c5ce7";
+            ctx.fillRect(paddingLeft, y, barWidth, barHeight);
+
+            ctx.fillStyle = "#333";
+            ctx.fillText(`${value.toFixed(4)} ${unit}`, paddingLeft + barWidth + 8, y + barHeight / 2);
+        });
+
+        ctx.strokeStyle = "#ddd";
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, paddingTop - 5);
+        ctx.lineTo(paddingLeft, height - paddingBottom + 5);
+        ctx.stroke();
+    }
+
+    function drawLineChart(canvasId, labels, values, unit) {
+        const canvasInfo = setupCanvas(canvasId);
+        if (!canvasInfo || !labels.length) {
+            return;
+        }
+
+        const { ctx, width, height } = canvasInfo;
+
+        const paddingLeft = 55;
+        const paddingRight = 30;
+        const paddingTop = 35;
+        const paddingBottom = 45;
+
+        const chartWidth = width - paddingLeft - paddingRight;
+        const chartHeight = height - paddingTop - paddingBottom;
+
+        const maxValue = Math.max(...values, 1);
+        const minValue = Math.min(...values, 0);
+        const range = maxValue - minValue || 1;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.font = "12px Segoe UI";
+
+        ctx.strokeStyle = "#ddd";
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, paddingTop);
+        ctx.lineTo(paddingLeft, height - paddingBottom);
+        ctx.lineTo(width - paddingRight, height - paddingBottom);
+        ctx.stroke();
+
+        const puncte = values.map((value, index) => {
+            const x = labels.length === 1
+                ? paddingLeft + chartWidth / 2
+                : paddingLeft + (index / (labels.length - 1)) * chartWidth;
+
+            const y = paddingTop + chartHeight - ((value - minValue) / range) * chartHeight;
+
+            return { x, y, value, label: labels[index] };
+        });
+
+        ctx.strokeStyle = "#6c5ce7";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+
+        puncte.forEach((punct, index) => {
+            if (index === 0) {
+                ctx.moveTo(punct.x, punct.y);
+            } else {
+                ctx.lineTo(punct.x, punct.y);
+            }
+        });
+
+        ctx.stroke();
+
+        puncte.forEach((punct) => {
+            ctx.fillStyle = "#4b0082";
+            ctx.beginPath();
+            ctx.arc(punct.x, punct.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = "#333";
+            ctx.fillText(`${punct.value.toFixed(2)} ${unit}`, punct.x - 18, punct.y - 10);
+        });
+
+        ctx.fillStyle = "#666";
+        labels.forEach((label, index) => {
+            if (index % Math.ceil(labels.length / 6) === 0 || index === labels.length - 1) {
+                const x = labels.length === 1
+                    ? paddingLeft + chartWidth / 2
+                    : paddingLeft + (index / (labels.length - 1)) * chartWidth;
+                ctx.fillText(label, x - 12, height - 18);
+            }
+        });
+    }
+
+    window.addEventListener("load", () => {
+        drawHorizontalBarChart(
+            "chartTimpMediu",
+            chartData.statistici_labels,
+            chartData.timp_mediu_ms,
+            "ms"
+        );
+
+        drawHorizontalBarChart(
+            "chartNumarOperatii",
+            chartData.statistici_labels,
+            chartData.numar_operatii,
+            "op."
+        );
+
+        drawHorizontalBarChart(
+            "chartMemorieMedie",
+            chartData.statistici_labels,
+            chartData.memorie_medie_kb,
+            "KB"
+        );
+
+        drawLineChart(
+            "chartEvolutieTimp",
+            chartData.log_labels,
+            chartData.log_timp_ms,
+            "ms"
+        );
+    });
+
+    window.addEventListener("resize", () => {
+        drawHorizontalBarChart("chartTimpMediu", chartData.statistici_labels, chartData.timp_mediu_ms, "ms");
+        drawHorizontalBarChart("chartNumarOperatii", chartData.statistici_labels, chartData.numar_operatii, "op.");
+        drawHorizontalBarChart("chartMemorieMedie", chartData.statistici_labels, chartData.memorie_medie_kb, "KB");
+        drawLineChart("chartEvolutieTimp", chartData.log_labels, chartData.log_timp_ms, "ms");
+    });
+</script>
+
 </body>
-</html>
+</html> 

@@ -92,3 +92,17 @@ class PerformantaRepository:
         )
 
         return statistici
+
+    def read_ultimele_loguri(self, limita: int = 20):
+        return (
+            self.session.query(Performanta)
+            .options(
+                joinedload(Performanta.fisier),
+                joinedload(Performanta.framework),
+                joinedload(Performanta.cheie).joinedload(Cheie.algoritm)
+            )
+            .order_by(Performanta.id_log.desc())
+            .limit(limita)
+            .all()
+        )
+
